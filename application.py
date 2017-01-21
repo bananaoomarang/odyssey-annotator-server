@@ -38,7 +38,7 @@ def load_odyssey(book=None, lines=None, lang="gk"):
 
 def handlePostInteractions():
     post_data = request.get_json()
-    interaction = db.create_interaction(typee=post_data["type"], fromm=post_data["from"], to=post_data["to"], sel=post_data["selection"], book=post_data["book"])
+    interaction = db.create_interaction(typee=post_data["type"], fromm=post_data["from"], to=post_data["to"], sel=post_data["selection"], book=int(post_data["book"]))
     data = json.dumps(interaction._store)
     res = make_response(data, 200)
     return res
