@@ -44,7 +44,11 @@ def handlePostInteractions():
     return res
 
 def handleGetInteractions():
-    book = int(request.args.get("book"))
+    book = request.args.get("book")
+    
+    if(book != None):
+        book = int(book)
+    
     interactions = db.fetch_interactions(book=book)
     data = json.dumps([x for x in interactions])
     res = make_response(data, 200)
