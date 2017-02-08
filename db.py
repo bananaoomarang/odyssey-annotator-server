@@ -65,3 +65,55 @@ def fetch_interactions(book=None):
     res = db.AQLQuery(aql, rawResults = True, batchSize = 10, bindVars = { 'book': book })
 
     return res
+
+def fetch_adjacent(entity):
+    aql = '''
+    FOR vertex IN
+        1
+        ANY
+        @e_id
+        GRAPH 'testGraph'
+            RETURN vertex
+    '''
+    res = db.AQLQuery(aql, rawResults = True, batchSize = 10, bindVars = { 'e_id': entity['_id'] })
+    return res
+
+class BridgeFinder:
+    def __init__(self, verticies):
+        self.V = verticies
+        self.bridges = []
+
+    def find_bridges(self):
+        print(len(self.V))
+        self.count = 0
+        self.low = [-1] * len(self.V)
+        self.pre = [-1] * len(self.V)
+
+        for i, v in enumerate(self.V):
+            if self.pre[i] == -1:
+                self.examine_vertex(i, i)
+        
+    def examine_vertex(self, u, v):
+        self.pre[v] = self.count
+        self.low[v] = self.pre[v]
+        self.count += 1
+
+        adjacent = fetch_adjacent(self.V[v])
+
+        for wv in adjacent:
+            w = [i for i,x in enumerate(self.V) if x['_id'] == wv['_id']][0]
+            if self.pre[w] == -1:
+                self.examine_vertex(v, w)
+                self.low[v] = min(self.low[v], self.low[w])
+
+                if self.low[w] == self.pre[w]:
+                    self.bridges.append({'from': self.V[v]['_id'], 'to': self.V[w]['_id']})
+                    
+            elif w != u:
+                self.low[v] = min(self.low[v], self.pre[w])
+
+def fetch_bridges():
+    verticies = [x for x in db["Entities"].fetchAll(rawResults = True)]
+    bridgeFinder = BridgeFinder(verticies)
+    bridgeFinder.find_bridges()
+    return bridgeFinder.bridges

@@ -116,5 +116,37 @@ def entities():
     else:
         return handleGetEntities()
 
+@app.route('/entities/bridges')
+def get_bridges():
+    bridges = db.fetch_bridges()
+    data = json.dumps([x for x in bridges])
+    res = make_response(data, 200)
+
+    return res
+
+@app.route('/percentdone')
+def get_percent_done():
+    interactions = [x for x in db.fetch_interactions()]
+
+    max_book = max([x['book'] for x in interactions])
+    max_line = max([x['selection']['to_line'] for x in interactions if x['book'] == max_book])
+
+    the_odyssey = load_odyssey();
+    line_nos = [len(x['l']) for x in the_odyssey]
+    total_lines = sum(line_nos)
+    total_done_lines = sum(line_nos[0:max_book]) - max_line
+    
+    data = json.dumps({
+        'percent': (total_done_lines / total_lines) * 100,
+        'stats': {
+            'books_left': 24 - max_book,
+            'lines_left': total_lines - total_done_lines,
+            'lines_left_in_current_book': line_nos[max_book-1] - max_line,
+            'total_interactions': len(interactions)
+        }
+    })
+    res = make_response(data, 200)
+    return res
+
 if __name__ == "__main__":
     app.run()
