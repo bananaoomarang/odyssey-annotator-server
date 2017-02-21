@@ -84,7 +84,6 @@ class BridgeFinder:
         self.bridges = []
 
     def find_bridges(self):
-        print(len(self.V))
         self.count = 0
         self.low = [-1] * len(self.V)
         self.pre = [-1] * len(self.V)
@@ -117,3 +116,39 @@ def fetch_bridges():
     bridgeFinder = BridgeFinder(verticies)
     bridgeFinder.find_bridges()
     return bridgeFinder.bridges
+
+def get_closeness(eID, lines=None):
+    aql = '''
+    FOR e IN Entities
+        FILTER e._id == @e_id
+        FOR e2 IN Entities
+            FILTER e._id != e2._id
+            FOR vert, edge
+                IN ANY SHORTEST_PATH
+                e TO e2
+                GRAPH 'testGraph'
+                    RETURN {from: e.name, to: e2.name, edge: edge }
+    '''
+    paths = db.AQLQuery(aql, rawResults = True, batchSize = 10, bindVars = { 'e_id': eID })
+    hashmap = {}
+    for path in paths:
+        if path['edge'] == None:
+            hashmap[path['to']] = []
+        else:
+            hashmap[path['to']].append(path)
+
+    lengths = [len(hashmap[key]) for key in hashmap]
+    lengths_sum = sum(lengths)
+    if(lengths_sum == 0):
+        return 0
+    else:
+        return 1 / lengths_sum
+
+def get_closenesses():
+    vertices = [x for x in db["Entities"].fetchAll(rawResults = True)]
+    closenesses = [
+        {
+            '_id': v['_id'],
+            'name': v['name'],
+            'closeness': get_closeness(v['_id']) } for v in vertices]
+    return sorted(closenesses, key=lambda x: x['closeness'], reverse=True)

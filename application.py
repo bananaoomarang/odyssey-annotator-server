@@ -102,6 +102,16 @@ def get_book_line(book, lines):
     res.headers['Content-Type'] = 'application/json'
     return res
 
+@app.route('/linenos')
+def get_line_nos():
+    the_odyssey = load_odyssey();
+    line_nos = [len(x['l']) for x in the_odyssey]
+
+    data = json.dumps(line_nos)
+    res = make_response(data, 200)
+    res.headers['Content-Type'] = 'application/json'
+    return res
+
 @app.route('/interactions', methods=['GET', 'POST'])
 def interactions():
     if request.method == 'POST':
@@ -120,6 +130,14 @@ def entities():
 def get_bridges():
     bridges = db.fetch_bridges()
     data = json.dumps([x for x in bridges])
+    res = make_response(data, 200)
+
+    return res
+
+@app.route('/entities/closenesses')
+def get_closeness():
+    closenesses = db.get_closenesses()
+    data = json.dumps(closenesses)
     res = make_response(data, 200)
 
     return res
@@ -147,6 +165,7 @@ def get_percent_done():
     })
     res = make_response(data, 200)
     return res
+
 
 if __name__ == "__main__":
     app.run()
