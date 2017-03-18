@@ -157,6 +157,7 @@ def get_percent_done():
     data = json.dumps({
         'percent': (total_done_lines / total_lines) * 100,
         'stats': {
+            'current_book': max_book,
             'books_left': 24 - max_book,
             'lines_left': total_lines - total_done_lines,
             'lines_left_in_current_book': line_nos[max_book-1] - max_line,
