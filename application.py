@@ -50,7 +50,17 @@ def handleGetInteractions():
         book = int(book)
     
     interactions = db.fetch_interactions(book=book)
-    data = json.dumps([x for x in interactions])
+    interactions = [x for x in interactions];
+    for x in interactions:
+        del x['_key']
+        del x['_rev']
+        del x['selection']['from_offset']
+        del x['selection']['to_offset']
+        x['_id'] = x['_id'].replace('Interactions/', '')
+        x['_from'] = x['_from'].replace('Entities/', '')
+        x['_to'] = x['_to'].replace('Entities/', '')
+    
+    data = json.dumps(interactions)
     res = make_response(data, 200)
     return res
 
@@ -63,6 +73,9 @@ def handlePostEntities():
 
 def handleGetEntities():
     entities = db.db["Entities"].fetchAll(rawResults=True)
+    entities = [x for x in entities]
+    for x in entities:
+        x['_id'] = x['_id'].replace('Entities/', '')
     data = json.dumps([x for x in entities])
     res = make_response(data, 200)
     return res
