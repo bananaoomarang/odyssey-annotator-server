@@ -142,7 +142,12 @@ def entities():
 @app.route('/entities/bridges')
 def get_bridges():
     bridges = db.fetch_bridges()
-    data = json.dumps([x for x in bridges])
+    bridges = [x for x in bridges]
+    for x in bridges:
+        x['from'] = x['from'].replace('Entities/', '')
+        x['to'] = x['to'].replace('Entities/', '')
+
+    data = json.dumps(bridges)
     res = make_response(data, 200)
 
     return res
