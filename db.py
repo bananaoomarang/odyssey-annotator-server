@@ -1,4 +1,5 @@
 from pyArango.connection import *
+import re;
 
 conn = Connection(username="root@odyssey", password="classics123")
 db = conn["odyssey"]
@@ -152,3 +153,17 @@ def get_closenesses():
             'name': v['name'],
             'closeness': get_closeness(v['_id']) } for v in vertices]
     return sorted(closenesses, key=lambda x: x['closeness'], reverse=True)
+
+def strip_lines():
+    interactions = db["Interactions"].fetchAll();
+    numbers_regex = re.compile(r"[0-9]+")
+    space_regex = re.compile(r"\s+")
+    backslash_regex = re.compile(r"\\")
+    for interaction in interactions:
+        sel = interaction['selection']
+        sel['text'] = numbers_regex.sub(' ', sel['text'])
+        sel['text'] = space_regex.sub(' ', sel['text'])
+        sel['text'] = backslash_regex.sub('', sel['text'])
+        interaction.save()
+
+    return {}

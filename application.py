@@ -185,6 +185,11 @@ def get_percent_done():
     res = make_response(data, 200)
     return res
 
+@app.route('/striplines')
+def strip_lines():
+    data = json.dumps(db.strip_lines())
+    res = make_response(data, 200)
+    return res
 
 if __name__ == "__main__":
     app.run()
